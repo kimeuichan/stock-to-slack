@@ -1,40 +1,60 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 )
 
+const NaverStockURI = "https://finance.naver.com/"
+
 type StockSummary struct {
-	changeVal string
-	changeRate string
-	stockName string
-	nowVal string
+	ChangeVal  string
+	ChangeRate string
+	StockName  string
+	NowVal     string
 }
 
-
 type StockClient interface {
-	GetStockSummary(int) (*StockSummary,  error)
+	GetStockSummary(stockNumber string) (*StockSummary, error)
 }
 
 type NaverClient struct {
+	host   string
 	client *http.Client
-	header *http.Header
 }
-
 
 type NaverHeader struct {
 	r http.RoundTripper
 }
 
-func (nh NaverHeader) RoundTrip(r *http.Request) (*http.Response, error){
+type naverItem struct {
+	ItemCode   string `json:"itemcode"`
+	ItemName   string `json:"itemname"`
+	ChangeVal  string `json:"change_val"`
+	ChangeRate string `json:"change_rate"`
+	NowVal     string `json:"now_val"`
+	RiseFall   string `json:"risefall"`
+}
+
+type NaverStockResponse struct {
+	ItemList     []naverItem `json:"item_list"`
+	PrevPage     int         `json:"prev_page"`
+	NextPage     int         `json:"prev_page"`
+	ItemToTalCnt int         `json:"itemTotalCnt"`
+	Login        bool        `json:"login"`
+	ReqType      string      `json:"type"`
+	Page         int         `json:"page"`
+	Code         string      `json:"string"`
+}
+
+func (nh NaverHeader) RoundTrip(r *http.Request) (*http.Response, error) {
 	r.Header.Add("authority", "finance.naver.com")
 	r.Header.Add("content-length", "0")
 	r.Header.Add("pragma", "no-cache")
 	r.Header.Add("cache-control", "no-cache")
 	r.Header.Add("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36")
-	r.Header.Add("content-type", "application/x-www-form-urlencoded; charset=utf-8")
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
 	r.Header.Add("accept", "*/*")
 	r.Header.Add("origin", "https://finance.naver.com")
 	r.Header.Add("sec-fetch-site", "same-origin")
@@ -45,34 +65,50 @@ func (nh NaverHeader) RoundTrip(r *http.Request) (*http.Response, error){
 	return nh.r.RoundTrip(r)
 }
 
-func GetClient(clientType string) *StockClient {
-	var client *StockClient
+func GetClient(clientType string) StockClient {
+	var client StockClient = nil
 
 	if clientType == "naver" {
-		client = new(NaverClient)
-		client.client = new (http.Client)
-		client.client.Transport = NaverHeader{r: http.DefaultTransport}
+		tempClient := new(NaverClient)
+		tempClient.host = NaverStockURI
+		tempClient.client = new(http.Client)
+		tempClient.client.Transport = NaverHeader{r: http.DefaultTransport}
+		client = tempClient
 	}
 
-	return nil
+	return client
 }
 
-func (nc *NaverClient) Get (url string) (resp *http.Response, err error){
-	return nc.client.Get(url)
+func (nc *NaverClient) Get(url string) (resp *http.Response, err error) {
+	return nc.client.Get(nc.host + url)
 }
 
-
-func (nc *NaverClient) GetStockSummary(stockNumber int) (*StockSummary,  error){
-	naverStockFullUrl := "?type=recent&code=" + string(stockNumber) + "&page=1"
+func (nc *NaverClient) GetStockSummary(stockNumber string) (*StockSummary, error) {
+	naverStockFullUrl := "/item/item_right_ajax.nhn?type=recent&code=" + stockNumber + "&page=1"
 
 	resp, err := nc.Get(naverStockFullUrl)
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
+	var naverStock NaverStockResponse
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(&naverStock)
 
-	return nil, err
+	if err != nil {
+		return nil, err
+	}
+
+	stockInfo := naverStock.ItemList[0]
+	fmt.Println(stockInfo)
+
+	stockSummary := &StockSummary{
+		ChangeVal:  stockInfo.ChangeVal,
+		ChangeRate: stockInfo.ChangeRate,
+		StockName:  stockInfo.ItemName,
+		NowVal:     stockInfo.NowVal,
+	}
+
+	return stockSummary, err
 }
