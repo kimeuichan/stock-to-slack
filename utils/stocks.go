@@ -2,7 +2,7 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
+	"golang.org/x/text/encoding/korean"
 	"net/http"
 )
 
@@ -42,7 +42,7 @@ type NaverStockResponse struct {
 	PrevPage     int         `json:"prev_page"`
 	NextPage     int         `json:"prev_page"`
 	ItemToTalCnt int         `json:"itemTotalCnt"`
-	Login        bool        `json:"login"`
+	Login        string        `json:"login"`
 	ReqType      string      `json:"type"`
 	Page         int         `json:"page"`
 	Code         string      `json:"string"`
@@ -93,15 +93,20 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*StockSummary, error
 	}
 
 	var naverStock NaverStockResponse
-	decoder := json.NewDecoder(resp.Body)
-	decoder.Decode(&naverStock)
 
-	if err != nil {
+	tempByte := make([]byte, 1000)
+
+	n, err := korean.EUCKR.NewDecoder().Reader(resp.Body).Read(tempByte)
+
+	if err != nil{
+		return nil, err
+	}
+
+	if err = json.Unmarshal(tempByte[:n], &naverStock); err != nil {
 		return nil, err
 	}
 
 	stockInfo := naverStock.ItemList[0]
-	fmt.Println(stockInfo)
 
 	stockSummary := &StockSummary{
 		ChangeVal:  stockInfo.ChangeVal,
