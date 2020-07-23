@@ -2,11 +2,12 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"golang.org/x/text/encoding/korean"
 	"net/http"
 )
 
-const NaverStockURI = "https://finance.naver.com/"
+const NaverStockURI = "https://finance.naver.com"
 
 type StockSummary struct {
 	ChangeVal  string
@@ -61,7 +62,6 @@ func (nh NaverHeader) RoundTrip(r *http.Request) (*http.Response, error) {
 	r.Header.Add("sec-fetch-mode", "cors")
 	r.Header.Add("sec-fetch-dest", "empty")
 	r.Header.Add("accept-language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6")
-	r.Header.Add("cookie", "naver_stock_codeList=019170%7C;")
 	return nh.r.RoundTrip(r)
 }
 
@@ -79,14 +79,14 @@ func GetClient(clientType string) StockClient {
 	return client
 }
 
-func (nc *NaverClient) Get(url string) (resp *http.Response, err error) {
-	return nc.client.Get(nc.host + url)
-}
 
 func (nc *NaverClient) GetStockSummary(stockNumber string) (*StockSummary, error) {
 	naverStockFullUrl := "/item/item_right_ajax.nhn?type=recent&code=" + stockNumber + "&page=1"
 
-	resp, err := nc.Get(naverStockFullUrl)
+	request, err := http.NewRequest("GET", NaverStockURI + naverStockFullUrl, nil)
+	request.Header.Add("cookie", fmt.Sprintf("naver_stock_codeList=%s;", stockNumber))
+
+	resp, err := nc.client.Do(request)
 
 	if err != nil {
 		return nil, err
