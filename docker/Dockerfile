@@ -12,6 +12,5 @@ RUN apt-get -y update && apt-get --yes install cron libssl-dev
 
 WORKDIR /app
 COPY --from=builder /app/main /app/main
-COPY docker/conf/stock-cron /etc/cron.d/root
 
-CMD ["cron", "-f"]
+CMD ["/app/main"]
