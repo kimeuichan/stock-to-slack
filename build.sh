@@ -1,1 +1,1 @@
-docker build -f docker/Dockerfile . -t sotkc-to-slack
+docker build -f docker/Dockerfile . -t stock-to-slack
