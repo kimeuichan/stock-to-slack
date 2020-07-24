@@ -1,24 +1,14 @@
-package utils
+package client
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kimeuichan/stock-to-slack/utils"
 	"golang.org/x/text/encoding/korean"
 	"net/http"
 )
 
 const NaverStockURI = "https://finance.naver.com"
-
-type StockSummary struct {
-	ChangeVal  string
-	ChangeRate string
-	StockName  string
-	NowVal     string
-}
-
-type StockClient interface {
-	GetStockSummary(stockNumber string) (*StockSummary, error)
-}
 
 type NaverClient struct {
 	host   string
@@ -43,7 +33,7 @@ type NaverStockResponse struct {
 	PrevPage     int         `json:"prev_page"`
 	NextPage     int         `json:"prev_page"`
 	ItemToTalCnt int         `json:"itemTotalCnt"`
-	Login        string        `json:"login"`
+	Login        string      `json:"login"`
 	ReqType      string      `json:"type"`
 	Page         int         `json:"page"`
 	Code         string      `json:"string"`
@@ -65,25 +55,10 @@ func (nh NaverHeader) RoundTrip(r *http.Request) (*http.Response, error) {
 	return nh.r.RoundTrip(r)
 }
 
-func GetClient(clientType string) StockClient {
-	var client StockClient = nil
-
-	if clientType == "naver" {
-		tempClient := new(NaverClient)
-		tempClient.host = NaverStockURI
-		tempClient.client = new(http.Client)
-		tempClient.client.Transport = NaverHeader{r: http.DefaultTransport}
-		client = tempClient
-	}
-
-	return client
-}
-
-
-func (nc *NaverClient) GetStockSummary(stockNumber string) (*StockSummary, error) {
+func (nc *NaverClient) GetStockSummary(stockNumber string) (*utils.StockSummary, error) {
 	naverStockFullUrl := "/item/item_right_ajax.nhn?type=recent&code=" + stockNumber + "&page=1"
 
-	request, err := http.NewRequest("GET", NaverStockURI + naverStockFullUrl, nil)
+	request, err := http.NewRequest("GET", NaverStockURI+naverStockFullUrl, nil)
 	request.Header.Add("cookie", fmt.Sprintf("naver_stock_codeList=%s;", stockNumber))
 
 	resp, err := nc.client.Do(request)
@@ -98,7 +73,7 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*StockSummary, error
 
 	n, err := korean.EUCKR.NewDecoder().Reader(resp.Body).Read(tempByte)
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
@@ -108,7 +83,7 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*StockSummary, error
 
 	stockInfo := naverStock.ItemList[0]
 
-	stockSummary := &StockSummary{
+	stockSummary := &utils.StockSummary{
 		ChangeVal:  stockInfo.ChangeVal,
 		ChangeRate: stockInfo.ChangeRate,
 		StockName:  stockInfo.ItemName,
