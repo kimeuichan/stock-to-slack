@@ -1,6 +1,7 @@
 package client
 
 import (
+	"crypto/tls"
 	"github.com/kimeuichan/stock-to-slack/utils"
 	"net/http"
 )
@@ -16,6 +17,7 @@ func GetClient(clientType string) StockClient {
 		tempClient := new(NaverClient)
 		tempClient.host = NaverStockURI
 		tempClient.client = new(http.Client)
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 		tempClient.client.Transport = NaverHeader{r: http.DefaultTransport}
 		client = tempClient
 	}
