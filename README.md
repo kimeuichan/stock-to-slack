@@ -1,3 +1,4 @@
+[![CircleCI](https://circleci.com/gh/kimeuichan/stock-to-slack.svg?style=shield)](https://circleci.com/gh/kimeuichan/stock-to-slack)
 # stock-to-slack
 
 ## Build
@@ -5,7 +6,7 @@
 sh ./build.sh
 ```
 
-## Run
+## Run with docker
 ```shell script
 docker run -d --name <container_name> \
 -e SLACK_WEBHOOK_URL=<slack_url> \
