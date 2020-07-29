@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"github.com/kimeuichan/stock-to-slack/utils"
 	"golang.org/x/text/encoding/korean"
+	"io"
 	"net/http"
 )
 
 const NaverStockURI = "https://finance.naver.com"
 
 type NaverClient struct {
-	host   string
+	Host   string
 	client *http.Client
 }
 
@@ -58,7 +59,7 @@ func (nh NaverHeader) RoundTrip(r *http.Request) (*http.Response, error) {
 func (nc *NaverClient) GetStockSummary(stockNumber string) (*utils.StockSummary, error) {
 	naverStockFullUrl := "/item/item_right_ajax.nhn?type=recent&code=" + stockNumber + "&page=1"
 
-	request, err := http.NewRequest("GET", NaverStockURI+naverStockFullUrl, nil)
+	request, err := http.NewRequest("GET", nc.Host+naverStockFullUrl, nil)
 	request.Header.Add("cookie", fmt.Sprintf("naver_stock_codeList=%s;", stockNumber))
 
 	resp, err := nc.client.Do(request)
@@ -74,7 +75,10 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*utils.StockSummary,
 	n, err := korean.EUCKR.NewDecoder().Reader(resp.Body).Read(tempByte)
 
 	if err != nil {
-		return nil, err
+		if err != io.EOF{
+			return nil, err
+
+		}
 	}
 
 	if err = json.Unmarshal(tempByte[:n], &naverStock); err != nil {
