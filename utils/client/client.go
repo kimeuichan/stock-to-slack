@@ -15,7 +15,7 @@ func GetClient(clientType string) StockClient {
 
 	if clientType == "naver" {
 		tempClient := new(NaverClient)
-		tempClient.host = NaverStockURI
+		tempClient.Host = NaverStockURI
 		tempClient.client = new(http.Client)
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 		tempClient.client.Transport = NaverHeader{r: http.DefaultTransport}
