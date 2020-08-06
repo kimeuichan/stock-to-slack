@@ -43,9 +43,5 @@ func (s *Slack) SendStock(summary *StockSummary) error {
 
 	_, err = s.Client.Post(s.slackWebHookURL, "application/json", bytes.NewBuffer(stockByte))
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

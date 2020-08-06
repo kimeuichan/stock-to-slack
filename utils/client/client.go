@@ -10,8 +10,13 @@ type StockClient interface {
 	GetStockSummary(stockNumber string) (*utils.StockSummary, error)
 }
 
-func GetClient(clientType string) StockClient {
-	var client StockClient = nil
+type StockAsyncClient interface {
+	StockClient
+	GetStockSummaryByGoRoutine(stockNumber string, c chan utils.StockSummary, err chan error)
+}
+
+func GetClient(clientType string) StockAsyncClient {
+	var client StockAsyncClient = nil
 
 	if clientType == "naver" {
 		tempClient := new(NaverClient)

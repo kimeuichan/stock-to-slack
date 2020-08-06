@@ -12,21 +12,24 @@ func main() {
 	viper.AutomaticEnv()
 	s := gocron.NewScheduler(time.Local)
 
+	nc := client.GetClient("naver")
+	sc := utils.NewSlack(viper.GetString("SLACK_WEBHOOK_URL"))
+
 	getStock := func() {
-		nc := client.GetClient("naver")
-		sc := utils.NewSlack(viper.GetString("SLACK_WEBHOOK_URL"))
+		stockSummary := make(chan utils.StockSummary)
+		errChannel := make(chan error)
+		go nc.GetStockSummaryByGoRoutine(viper.GetString("STOCK_NUMBER"), stockSummary, errChannel)
 
-		stockSummary, err := nc.GetStockSummary(viper.GetString("STOCK_NUMBER"))
-
-		if err != nil {
-			panic(err)
-		}
-
-		if err := sc.SendStock(stockSummary); err != nil {
+		select {
+		case stock := <-stockSummary:
+			if err := sc.SendStock(&stock); err != nil {
+				panic(err)
+			}
+		case err := <-errChannel:
 			panic(err)
 		}
 	}
 
-	s.Every(1).Minutes().Do(getStock)
+	s.Every(1).Minutes().StartImmediately().Do(getStock)
 	s.StartBlocking()
 }

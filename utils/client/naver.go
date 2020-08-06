@@ -96,3 +96,13 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*utils.StockSummary,
 
 	return stockSummary, err
 }
+
+func (nc *NaverClient) GetStockSummaryByGoRoutine(stockNumber string, c chan utils.StockSummary, err chan error){
+	stockSummary, tempErr := nc.GetStockSummary(stockNumber)
+
+	if tempErr == nil {
+		c <- *stockSummary
+	} else {
+		err <- tempErr
+	}
+}
