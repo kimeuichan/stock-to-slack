@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/go-co-op/gocron"
 	"github.com/kimeuichan/stock-to-slack/utils"
 	"github.com/kimeuichan/stock-to-slack/utils/client"
 	"github.com/spf13/viper"
+	"strings"
 	"time"
 )
 
