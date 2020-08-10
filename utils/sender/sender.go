@@ -1,7 +1,9 @@
 package sender
 
-import "github.com/kimeuichan/stock-to-slack/utils"
+import (
+	"github.com/kimeuichan/stock-to-slack/domain"
+)
 
 type SendClient interface {
-	SendStock(summary *utils.StockSummary) error
+	SendStock(summary *domain.StockSummary) error
 }

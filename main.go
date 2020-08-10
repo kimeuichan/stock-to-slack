@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/go-co-op/gocron"
-	"github.com/kimeuichan/stock-to-slack/utils"
+	"github.com/kimeuichan/stock-to-slack/domain"
 	"github.com/kimeuichan/stock-to-slack/utils/client"
 	"github.com/kimeuichan/stock-to-slack/utils/sender"
 	"github.com/spf13/viper"
@@ -17,7 +17,7 @@ func main() {
 	sc := sender.NewSlack(viper.GetString("SLACK_WEBHOOK_URL"))
 
 	getStock := func() {
-		stockSummary := make(chan utils.StockSummary)
+		stockSummary := make(chan domain.StockSummary)
 		errChannel := make(chan error)
 		go nc.GetStockSummaryByGoRoutine(viper.GetString("STOCK_NUMBER"), stockSummary, errChannel)
 

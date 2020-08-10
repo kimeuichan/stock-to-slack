@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/kimeuichan/stock-to-slack/utils"
+	"github.com/kimeuichan/stock-to-slack/domain"
 	"io"
 	"net/http"
 	"strings"
@@ -26,7 +26,7 @@ type SlackRequest struct {
 	Text string `json:"text"`
 }
 
-func TransformStockSummary(summary *utils.StockSummary) *SlackRequest {
+func TransformStockSummary(summary *domain.StockSummary) *SlackRequest {
 	return &SlackRequest{
 		Text: fmt.Sprintf(
 			"%s\n"+
@@ -74,7 +74,7 @@ func (se SlackError) Error() string {
 	return se.msg
 }
 
-func (s *Slack) SendStock(summary *utils.StockSummary) error {
+func (s *Slack) SendStock(summary *domain.StockSummary) error {
 	slackRequestBody := TransformStockSummary(summary)
 
 	stockByte, err := json.Marshal(slackRequestBody)

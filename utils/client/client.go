@@ -2,17 +2,17 @@ package client
 
 import (
 	"crypto/tls"
-	"github.com/kimeuichan/stock-to-slack/utils"
+	"github.com/kimeuichan/stock-to-slack/domain"
 	"net/http"
 )
 
 type StockClient interface {
-	GetStockSummary(stockNumber string) (*utils.StockSummary, error)
+	GetStockSummary(stockNumber string) (*domain.StockSummary, error)
 }
 
 type StockAsyncClient interface {
 	StockClient
-	GetStockSummaryByGoRoutine(stockNumber string, c chan utils.StockSummary, err chan error)
+	GetStockSummaryByGoRoutine(stockNumber string, c chan domain.StockSummary, err chan error)
 }
 
 func GetClient(clientType string) StockAsyncClient {

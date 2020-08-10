@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/kimeuichan/stock-to-slack/utils"
+	"github.com/kimeuichan/stock-to-slack/domain"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/text/encoding/korean"
 	"net/http"
@@ -24,7 +24,7 @@ func TestNaverClient_GetStockSummary(t *testing.T) {
 	naverClient := NaverClient{Host: server.URL, client: http.DefaultClient}
 
 	stockSummary, _ := naverClient.GetStockSummary("019170")
-	expectedStockSummary := &utils.StockSummary{
+	expectedStockSummary := &domain.StockSummary{
 		ChangeVal:  "1,900",
 		ChangeRate: "-2.59",
 		StockName:  "신풍제약",
@@ -47,11 +47,11 @@ func TestNaverClient_GetStockSummaryByGoRoutine(t *testing.T) {
 
 	naverClient := NaverClient{Host: server.URL, client: http.DefaultClient}
 
-	stockSummary := make(chan utils.StockSummary)
+	stockSummary := make(chan domain.StockSummary)
 	err := make(chan error)
 
 	go naverClient.GetStockSummaryByGoRoutine("019170", stockSummary, err)
-	expectedStockSummary := utils.StockSummary{
+	expectedStockSummary := domain.StockSummary{
 		ChangeVal:  "1,900",
 		ChangeRate: "-2.59",
 		StockName:  "신풍제약",

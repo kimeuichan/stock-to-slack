@@ -3,7 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/kimeuichan/stock-to-slack/utils"
+	"github.com/kimeuichan/stock-to-slack/domain"
 	"golang.org/x/text/encoding/korean"
 	"io"
 	"net/http"
@@ -56,7 +56,7 @@ func (nh NaverHeader) RoundTrip(r *http.Request) (*http.Response, error) {
 	return nh.r.RoundTrip(r)
 }
 
-func (nc *NaverClient) GetStockSummary(stockNumber string) (*utils.StockSummary, error) {
+func (nc *NaverClient) GetStockSummary(stockNumber string) (*domain.StockSummary, error) {
 	naverStockFullUrl := "/item/item_right_ajax.nhn?type=recent&code=" + stockNumber + "&page=1"
 
 	request, err := http.NewRequest("GET", nc.Host+naverStockFullUrl, nil)
@@ -87,7 +87,7 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*utils.StockSummary,
 
 	stockInfo := naverStock.ItemList[0]
 
-	stockSummary := &utils.StockSummary{
+	stockSummary := &domain.StockSummary{
 		ChangeVal:  stockInfo.ChangeVal,
 		ChangeRate: stockInfo.ChangeRate,
 		StockName:  stockInfo.ItemName,
@@ -97,7 +97,7 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*utils.StockSummary,
 	return stockSummary, err
 }
 
-func (nc *NaverClient) GetStockSummaryByGoRoutine(stockNumber string, c chan utils.StockSummary, err chan error){
+func (nc *NaverClient) GetStockSummaryByGoRoutine(stockNumber string, c chan domain.StockSummary, err chan error){
 	stockSummary, tempErr := nc.GetStockSummary(stockNumber)
 
 	if tempErr == nil {

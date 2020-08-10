@@ -2,7 +2,7 @@ package sender
 
 import (
 	"bytes"
-	"github.com/kimeuichan/stock-to-slack/utils"
+	"github.com/kimeuichan/stock-to-slack/domain"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -25,7 +25,7 @@ func TestSlack_send(t *testing.T){
 }
 
 func TestTransformStockSummary(t *testing.T) {
-	testStockInfo := utils.StockSummary{
+	testStockInfo := domain.StockSummary{
 		ChangeVal:  "100",
 		ChangeRate: "1%",
 		StockName:  "테스트 스톡",

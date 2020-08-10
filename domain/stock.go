@@ -1,4 +1,4 @@
-package utils
+package domain
 
 type StockSummary struct {
 	ChangeVal  string
