@@ -55,11 +55,11 @@ func (s *Slack) send(body io.Reader) error {
 		if err != io.EOF{
 			return err
 		}
+		err = nil
 	}
 
 	resultString := strings.TrimSpace(string(tempByte))
-	if resultString != SlackOkMessage {
-		fmt.Println(strings.Compare(resultString, SlackOkMessage))
+	if !strings.Contains(resultString, SlackOkMessage) {
 		return SlackError{resultString}
 	}
 
