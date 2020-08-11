@@ -64,6 +64,8 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*domain.StockSummary
 
 	resp, err := nc.client.Do(request)
 
+	defer resp.Body.Close()
+
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +79,6 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*domain.StockSummary
 	if err != nil {
 		if err != io.EOF{
 			return nil, err
-
 		}
 	}
 
