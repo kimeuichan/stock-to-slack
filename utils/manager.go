@@ -2,10 +2,8 @@ package utils
 
 import (
 	"github.com/go-co-op/gocron"
-	"github.com/kimeuichan/stock-to-slack/domain"
 	"github.com/kimeuichan/stock-to-slack/utils/client"
 	"github.com/kimeuichan/stock-to-slack/utils/sender"
-	"github.com/spf13/viper"
 	"time"
 )
 
@@ -24,31 +22,22 @@ func NewStockManager() *StockManager {
 	return &StockManager{Scheduler: scheduler, stocks: make(map[string]bool)}
 }
 
-func (sm *StockManager) SubscribeStocks(stockNumbers []string){
+func (sm *StockManager) AttachStocks(stockNumbers []string){
 	for _, stockNumber := range stockNumbers {
-		sm.SubscribeStock(stockNumber)
+		sm.AttachStock(stockNumber)
 	}
 }
 
-func (sm *StockManager) SubscribeStock(stockNumber string) {
+func (sm *StockManager) AttachStock(stockNumber string) {
 	if _, exists := sm.stocks[stockNumber]; exists {
 		return
 	}
 
 	tempTag := append(defaultTag, stockNumber)
-	sm.Scheduler.SetTag(tempTag).Every(sm.Interval).Second().Do(func() {
-		stockSummary := make(chan domain.StockSummary)
-		errChannel := make(chan error)
-		go sm.StockClient.GetStockSummaryByGoRoutine(viper.GetString("STOCK_NUMBER"), stockSummary, errChannel)
-
-		select {
-		case stock := <-stockSummary:
-			sm.stocks[stockNumber] = true
-
-			if err := sm.StockSender.SendStock(&stock); err != nil {
-				panic(err)
-			}
-		case err := <-errChannel:
+	sm.Scheduler.Every(sm.Interval).Seconds().SetTag(tempTag).Do(func() {
+		if stockSummary, err := sm.StockClient.GetStockSummary(stockNumber); err == nil {
+			sm.StockSender.SendStock(stockSummary)
+		} else {
 			panic(err)
 		}
 	})
@@ -63,8 +52,12 @@ func (sm *StockManager) DetachStock(stockNumber string) {
 	delete(sm.stocks, stockNumber)
 }
 
-func (sm *StockManager) Clear() {
+func (sm *StockManager) ExpiredAllStocks() {
+	sm.Scheduler.RemoveJobByTag(defaultTag[0])
+}
+
+func (sm *StockManager) RecoverStocks() {
 	for k := range sm.stocks {
-		sm.Scheduler.RemoveJobByTag(k)
+		sm.AttachStock(k)
 	}
 }
