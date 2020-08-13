@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type StockManager struct {
+type StockWorker struct {
 	Scheduler   *gocron.Scheduler
 	StockClient client.StockAsyncClient
 	StockSender sender.SendClient
@@ -17,18 +17,18 @@ type StockManager struct {
 
 var defaultTag = []string{"STOCK"}
 
-func NewStockManager() *StockManager {
+func NewStockWorker() *StockWorker {
 	scheduler := gocron.NewScheduler(time.Local)
-	return &StockManager{Scheduler: scheduler, stocks: make(map[string]bool)}
+	return &StockWorker{Scheduler: scheduler, stocks: make(map[string]bool)}
 }
 
-func (sm *StockManager) AttachStocks(stockNumbers []string){
+func (sm *StockWorker) AttachStocks(stockNumbers []string){
 	for _, stockNumber := range stockNumbers {
 		sm.AttachStock(stockNumber)
 	}
 }
 
-func (sm *StockManager) AttachStock(stockNumber string) {
+func (sm *StockWorker) AttachStock(stockNumber string) {
 	if _, exists := sm.stocks[stockNumber]; exists {
 		return
 	}
@@ -43,7 +43,7 @@ func (sm *StockManager) AttachStock(stockNumber string) {
 	})
 }
 
-func (sm *StockManager) DetachStock(stockNumber string) {
+func (sm *StockWorker) DetachStock(stockNumber string) {
 	if _, exists := sm.stocks[stockNumber]; !exists {
 		return
 	}
@@ -52,11 +52,11 @@ func (sm *StockManager) DetachStock(stockNumber string) {
 	delete(sm.stocks, stockNumber)
 }
 
-func (sm *StockManager) ExpiredAllStocks() {
+func (sm *StockWorker) ExpiredAllStocks() {
 	sm.Scheduler.RemoveJobByTag(defaultTag[0])
 }
 
-func (sm *StockManager) RecoverStocks() {
+func (sm *StockWorker) RecoverStocks() {
 	for k := range sm.stocks {
 		sm.AttachStock(k)
 	}

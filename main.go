@@ -14,7 +14,7 @@ func main() {
 	nc := client.GetClient("naver")
 	sc := sender.NewSlack(viper.GetString("SLACK_WEBHOOK_URL"))
 
-	manager := utils.NewStockManager()
+	manager := utils.NewStockWorker()
 
 	manager.StockClient = nc
 	manager.StockSender = sc
