@@ -9,16 +9,16 @@ import (
 
 type StockScheduler struct {
 	Scheduler   *gocron.Scheduler
-	StockClient client.StockAsyncClient
+	StockClient client.StockClient
 	StockSender sender.SendClient
 	Interval    uint64
 }
 
 var defaultTag = []string{"STOCK"}
 
-func NewStockWorker() *StockScheduler {
+func NewStockWorker(stockClient client.StockClient, sendClient sender.SendClient, interval uint64) *StockScheduler {
 	scheduler := gocron.NewScheduler(time.Local)
-	return &StockScheduler{Scheduler: scheduler}
+	return &StockScheduler{Scheduler: scheduler, StockClient: stockClient, StockSender: sendClient, Interval: interval}
 }
 
 func (sw *StockScheduler) AttachStock(stockNumber string) {
