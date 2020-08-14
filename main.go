@@ -14,16 +14,17 @@ func main() {
 	nc := client.GetClient("naver")
 	sc := sender.NewSlack(viper.GetString("SLACK_WEBHOOK_URL"))
 
-	manager := utils.NewStockWorker()
+	stockManager := utils.NewStockManager()
 
-	manager.StockClient = nc
-	manager.StockSender = sc
-	manager.Interval = viper.GetUint64("INTERVAL")
+	stockWorker := utils.NewStockWorker(nc, sc, viper.GetUint64("INTERVAL"))
+
+	stockManager.Subscribe(stockWorker)
 
 	stocks := strings.Split(viper.GetString("STOCK_NUMBERS"), ",")
 
-	manager.AttachStocks(stocks)
+	for _, stock := range stocks {
+		stockManager.AttachStock(stock)
+	}
 
-	manager.Scheduler.StartBlocking()
-
+	stockWorker.Scheduler.StartBlocking()
 }
