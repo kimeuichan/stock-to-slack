@@ -12,7 +12,7 @@ type StockClient interface {
 
 type StockAsyncClient interface {
 	StockClient
-	GetStockSummaryByGoRoutine(stockNumber string, c chan domain.StockSummary, err chan error)
+	GetStockSummaryByGoRoutine(stockNumbers []string) chan *domain.StockSummary
 }
 
 func GetClient(clientType string) StockAsyncClient {

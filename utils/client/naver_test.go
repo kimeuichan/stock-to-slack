@@ -47,10 +47,8 @@ func TestNaverClient_GetStockSummaryByGoRoutine(t *testing.T) {
 
 	naverClient := NaverClient{Host: server.URL, client: http.DefaultClient}
 
-	stockSummary := make(chan domain.StockSummary)
-	err := make(chan error)
+	out := naverClient.GetStockSummaryByGoRoutine([]string{"019170"})
 
-	go naverClient.GetStockSummaryByGoRoutine("019170", stockSummary, err)
 	expectedStockSummary := domain.StockSummary{
 		ChangeVal:  "1,900",
 		ChangeRate: "-2.59",
@@ -58,5 +56,8 @@ func TestNaverClient_GetStockSummaryByGoRoutine(t *testing.T) {
 		NowVal:     "71,600",
 	}
 
-	assert.Equal(t, expectedStockSummary, <-stockSummary)
+	for i := range out {
+		assert.Equal(t, expectedStockSummary, i)
+	}
+
 }

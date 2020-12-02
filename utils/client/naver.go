@@ -77,7 +77,7 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*domain.StockSummary
 	n, err := korean.EUCKR.NewDecoder().Reader(resp.Body).Read(tempByte)
 
 	if err != nil {
-		if err != io.EOF{
+		if err != io.EOF {
 			return nil, err
 		}
 	}
@@ -98,12 +98,18 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*domain.StockSummary
 	return stockSummary, err
 }
 
-func (nc *NaverClient) GetStockSummaryByGoRoutine(stockNumber string, c chan domain.StockSummary, err chan error){
-	stockSummary, tempErr := nc.GetStockSummary(stockNumber)
+func (nc *NaverClient) GetStockSummaryByGoRoutine(stockNumbers []string) chan *domain.StockSummary {
+	out := make(chan *domain.StockSummary, len(stockNumbers))
+	defer close(out)
 
-	if tempErr == nil {
-		c <- *stockSummary
-	} else {
-		err <- tempErr
+	for _, stock := range stockNumbers {
+		go func() {
+			// TODO: error handling
+			if stockSummary, tempErr := nc.GetStockSummary(stock); tempErr != nil {
+				out <- stockSummary
+			}
+		}()
 	}
+
+	return out
 }

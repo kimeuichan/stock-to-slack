@@ -6,4 +6,6 @@ import (
 
 type SendClient interface {
 	SendStock(summary *domain.StockSummary) error
+	SendStocks(chan *domain.StockSummary) error
 }
+
