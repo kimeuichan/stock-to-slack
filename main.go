@@ -12,7 +12,8 @@ func main() {
 	viper.AutomaticEnv()
 
 	nc := client.GetClient("naver")
-	sc := sender.NewSlack(viper.GetString("SLACK_WEBHOOK_URL"))
+
+	sc := sender.GetSender(viper.GetString("SENDER"))
 
 	stockManager := utils.NewStockManager()
 
