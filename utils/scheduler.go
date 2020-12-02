@@ -4,31 +4,32 @@ import (
 	"github.com/go-co-op/gocron"
 	"github.com/kimeuichan/stock-to-slack/utils/client"
 	"github.com/kimeuichan/stock-to-slack/utils/sender"
-	"time"
 )
 
 type StockScheduler struct {
 	Scheduler   *gocron.Scheduler
-	StockClient client.StockClient
+	StockClient client.StockAsyncClient
 	StockSender sender.SendClient
+	StockManager *StockManager
 	Interval    uint64
+}
+
+func NewStockScheduler(stockClient client.StockAsyncClient, stockSender sender.SendClient, stockManager *StockManager, interval uint64) *StockScheduler {
+	return &StockScheduler{StockClient: stockClient, StockSender: stockSender, StockManager: stockManager, Interval: interval}
 }
 
 var defaultTag = []string{"STOCK"}
 
-func NewStockWorker(stockClient client.StockClient, sendClient sender.SendClient, interval uint64) *StockScheduler {
-	scheduler := gocron.NewScheduler(time.Local)
-	return &StockScheduler{Scheduler: scheduler, StockClient: stockClient, StockSender: sendClient, Interval: interval}
+
+func (sw *StockScheduler) Execute(){
+	stocksChannel := sw.StockClient.GetStockSummaryByGoRoutine(sw.StockManager.GetStocks())
+	sw.StockSender.SendStocks(stocksChannel)
 }
 
 func (sw *StockScheduler) AttachStock(stockNumber string) {
 	tempTag := append(defaultTag, stockNumber)
 	sw.Scheduler.Every(sw.Interval).Seconds().SetTag(tempTag).Do(func() {
-		if stockSummary, err := sw.StockClient.GetStockSummary(stockNumber); err == nil {
-			sw.StockSender.SendStock(stockSummary)
-		} else {
-			panic(err)
-		}
+		sw.Execute()
 	})
 }
 

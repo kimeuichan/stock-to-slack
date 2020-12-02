@@ -7,6 +7,7 @@ import (
 	"golang.org/x/text/encoding/korean"
 	"io"
 	"net/http"
+	"sync"
 )
 
 const NaverStockURI = "https://finance.naver.com"
@@ -100,16 +101,24 @@ func (nc *NaverClient) GetStockSummary(stockNumber string) (*domain.StockSummary
 
 func (nc *NaverClient) GetStockSummaryByGoRoutine(stockNumbers []string) chan *domain.StockSummary {
 	out := make(chan *domain.StockSummary, len(stockNumbers))
-	defer close(out)
+	var wg sync.WaitGroup
+
+	wg.Add(len(stockNumbers))
 
 	for _, stock := range stockNumbers {
 		go func() {
 			// TODO: error handling
-			if stockSummary, tempErr := nc.GetStockSummary(stock); tempErr != nil {
+			if stockSummary, tempErr := nc.GetStockSummary(stock); tempErr == nil {
 				out <- stockSummary
 			}
+			wg.Done()
 		}()
 	}
+
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
 
 	return out
 }

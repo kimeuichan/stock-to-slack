@@ -87,3 +87,14 @@ func (s *Slack) SendStock(summary *domain.StockSummary) error {
 
 	return err
 }
+
+func (s *Slack) SendStocks(summaries chan *domain.StockSummary) error {
+	for stock := range summaries {
+		go func() {
+			s.SendStock(stock)
+		}()
+	}
+
+	// TODO: hanlding error
+	return nil
+}

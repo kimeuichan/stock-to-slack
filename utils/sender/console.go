@@ -13,14 +13,7 @@ func NewConsole() *Console {
 }
 
 func (c *Console) SendStock(summary *domain.StockSummary) error {
-	fmt.Print(fmt.Sprintf(
-		"%s\n"+
-			"```"+
-			"현재: %s\n"+
-			"변동율: %s"+
-			"```\n",
-		summary.StockName, summary.NowVal, summary.ChangeRate))
-
+	fmt.Print(summary)
 	return nil
 }
 
