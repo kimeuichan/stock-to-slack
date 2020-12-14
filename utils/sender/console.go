@@ -13,7 +13,7 @@ func NewConsole() *Console {
 }
 
 func (c *Console) SendStock(summary *domain.StockSummary) error {
-	fmt.Print(summary)
+	fmt.Println(summary)
 	return nil
 }
 

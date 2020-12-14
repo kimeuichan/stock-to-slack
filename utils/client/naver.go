@@ -106,13 +106,13 @@ func (nc *NaverClient) GetStockSummaryByGoRoutine(stockNumbers []string) chan *d
 	wg.Add(len(stockNumbers))
 
 	for _, stock := range stockNumbers {
-		go func() {
+		go func(stockNumber string) {
 			// TODO: error handling
-			if stockSummary, tempErr := nc.GetStockSummary(stock); tempErr == nil {
+			if stockSummary, tempErr := nc.GetStockSummary(stockNumber); tempErr == nil {
 				out <- stockSummary
 			}
 			wg.Done()
-		}()
+		}(stock)
 	}
 
 	go func() {
