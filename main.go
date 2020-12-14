@@ -8,24 +8,29 @@ import (
 	"strings"
 )
 
-func main() {
+var interval uint64
+
+func init() {
 	viper.AutomaticEnv()
+	interval = viper.GetUint64("INTERVAL")
+}
 
+func main() {
 	nc := client.GetClient("naver")
-
 	sc := sender.GetSender(viper.GetString("SENDER"))
+	stockExecutor := utils.NewStockExecutor(nc, sc)
 
 	stockManager := utils.NewStockManager()
-
-	stockWorker := utils.NewStockWorker(nc, sc, viper.GetUint64("INTERVAL"))
-
-	stockManager.Subscribe(stockWorker)
-
 	stocks := strings.Split(viper.GetString("STOCK_NUMBERS"), ",")
-
 	for _, stock := range stocks {
 		stockManager.AttachStock(stock)
 	}
 
-	stockWorker.Scheduler.StartBlocking()
+	stockScheduler := utils.NewStockScheduler()
+
+	stockScheduler.Scheduler.Every(interval).Seconds().SetTag([]string{"test"}).Do(func() {
+		stockExecutor.Execute(stockManager.GetStocks())
+	})
+
+	stockScheduler.Scheduler.StartBlocking()
 }
