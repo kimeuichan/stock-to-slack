@@ -13,3 +13,7 @@ docker run -d --name <container_name> \
 -e STOCK_NUMBER=<stock_id> \
 stock-to-slack:latest
 ```
+
+## TODO
+- http server handler refactoring
+- 스케줄러 자동 시작(오전 9시 ~ 오후 6시)

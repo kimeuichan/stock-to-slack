@@ -12,6 +12,7 @@ import (
 )
 
 var interval uint64
+
 const BaseStockTask = "BASE_STOCK_TASK"
 
 func init() {
