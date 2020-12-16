@@ -6,3 +6,11 @@ type StockSummary struct {
 	StockName  string
 	NowVal     string
 }
+
+type StockRequest struct {
+	StockNumber string `json: "stockNumber"`
+}
+
+type IntervalRequest struct {
+	Interval uint64 `json: "interval"`
+}
