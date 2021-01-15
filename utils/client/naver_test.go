@@ -56,8 +56,8 @@ func TestNaverClient_GetStockSummaryByGoRoutine(t *testing.T) {
 		NowVal:     "71,600",
 	}
 
-	for i := range out {
-		assert.Equal(t, expectedStockSummary, i)
+	for stockSummary := range out {
+		assert.Equal(t, expectedStockSummary, *stockSummary)
 	}
 
 }
